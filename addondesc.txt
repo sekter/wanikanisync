@@ -1,0 +1,17 @@
+Up to your WaniKani level the kanjies and words are copied to Anki decks. 
+You can run this add-on multiple times as your level is increasing in WaniKani, new notes will be added to the existing ones (existing notes won't be touched).
+WaniKani APIv2 key is required!
+
+Kanji note has 4 cards:
+- Recognition: Kanji -> Meaning
+- On'yomi: Kanji -> On'yomi + On'yomi mnemonic
+- Kun'yomi: Kanji -> Kun'yomi + Kun'yomi mnemonic
+- Stroke order: Kanji -> Stroke order. This card is available only if you generate the stroke order diagrams using the Kanji Colorizer (stroke order diagrams): https://ankiweb.net/shared/info/1964372878 add-on.
+
+Vocabulary note has 4 cards too:
+- Recognitions: Word -> Meaning + Parts of speech + Meaning mnemonic
+- Reading: Word -> Reading + Reading mnemonic
+- Recall reading: Meaning + Parts of speech -> Reading + Reading mnemonic
+- Recall writing: Meaning + Parts of speech -> Word
+
+The source is available here: https://github.com/sekter/wanikanisync
