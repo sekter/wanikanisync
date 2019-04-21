@@ -1,12 +1,12 @@
 # wanikanisync
 WaniKani to Anki syncronisation add-on. 
 With this add-on you can generate:
-- A Kanji note type
-- A Vocabulary note type
-- A Kanji deck
-- A Vocabulary deck
+- Kanji note type
+- Vocabulary note type
+- Kanji deck
+- Vocabulary deck
 
-The decks contains notes up to the level you've already achieved in WaniKani.
+The decks can contain notes up to the level you've already achieved in WaniKani.
 
 # How to use it
 1. Create a folder in the addons21 folder of the Anki application.
