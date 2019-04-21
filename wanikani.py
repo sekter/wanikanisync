@@ -10,8 +10,6 @@ from aqt.utils import showInfo, showCritical, askUser
 from aqt.qt import *
 from anki.importing.noteimp  import NoteImporter, ForeignNote
 
-import wanikanisync as form
-
 import re
 from urllib.request import urlopen, Request
 import json
