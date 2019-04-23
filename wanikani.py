@@ -20,6 +20,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 WK_KANJI_URL = 'https://api.wanikani.com/v2/subjects?hidden=false&types=kanji'
 WK_VOCAB_URL = 'https://api.wanikani.com/v2/subjects?hidden=false&types=vocabulary'
+WK_ASSIGNMENT_URL = 'https://api.wanikani.com/v2/assignments?unlocked=true&subject_types={}'
 WK_USER_URL  = 'https://api.wanikani.com/v2/user'
 
 WKH_REV_KEY   = 'Wanikani-Revision'
@@ -49,8 +50,8 @@ class WaniKaniImporter(NoteImporter):
     def __init__(self, *args):
         NoteImporter.__init__(self, *args)
         self.allowHTML = True
+        self.availableIds = set();
         
-
     def foreignNotes(self):
         notes = []
         for item in self.correctPart():
@@ -68,13 +69,13 @@ class WaniKaniImporter(NoteImporter):
 class WKKanjiImporter(WaniKaniImporter):
     def __init(self, *args):
         WaniKaniImporter.__init(self, *args)
-        
+
     def fields(self):
         return 10 # number of field (from the beginning) we import
 
     def noteFromJson(self,jsonDict):
         note = None
-        if (jsonDict[u'object'] == 'kanji'):
+        if (jsonDict[u'object'] == 'kanji' and jsonDict[u'id'] in self.availableIds):
             note = ForeignNote()
             
             # appending as a number anki throws an Exception
@@ -125,7 +126,7 @@ class WKVocabImporter(WaniKaniImporter):
 
     def noteFromJson(self,jsonDict):
         note = None
-        if (jsonDict[u'object'] == 'vocabulary'):
+        if (jsonDict[u'object'] == 'vocabulary' and jsonDict[u'id'] in self.availableIds):
             note = ForeignNote()
             
             # appending as a number anki throws an Exception
@@ -158,6 +159,21 @@ def getWKMaxLevel():
     req.add_header(WKH_AUTH_KEY, WKH_AUTH_VALUE.format(WK_CONF['WK API Key']))
     user = getJsonResponseFromWK(req)
     return min(user['data']['level'],user['data']['subscription']['max_level_granted'])
+
+# get the set of unlocked subject IDs
+def getWKAvailableSubjectIds(type):
+    url = WK_ASSIGNMENT_URL.format(type)
+    retVal = set()
+    while url:
+        assignments = callWaniKani(url)
+        if not assignments:
+            showCritical("No response from WaniKani, the deck is partially filled.")
+            break
+
+        retVal = retVal | set(x[u'data'][u'subject_id'] for x in assignments[u'data'] if x[u'data'][u'srs_stage']>0)
+        url = assignments[u'pages'][u'next_url']
+
+    return retVal
 
 # proceessing json list structures to return the values in a single text
 # concatenating the jsonField values from the list items
@@ -215,6 +231,7 @@ def updateWKKanjiDeck():
     # let import the notes page by page
     # just the available levels
     # be careful the WK_KANJI_URL contains the type parameter so the levels is added to by &
+    availableKanjiIds = getWKAvailableSubjectIds("kanji")
     url = WK_KANJI_URL+"&"+WKH_LEVELS_KEY+"="+",".join(str(x) for x in list(range(1, getWKMaxLevel()+1)))
     while url:
         kanjiJson = callWaniKani(url)
@@ -224,6 +241,7 @@ def updateWKKanjiDeck():
         wki = WKKanjiImporter(mw.col,kanjiJson)
         # ignore if first field matches existing note (0 update - default, 2 import)
         wki.importMode = 1
+        wki.availableIds = availableKanjiIds;
         wki.initMapping()
         wki.run()
         url = kanjiJson[u'pages'][u'next_url']
@@ -302,6 +320,7 @@ def updateWKVocabDeck():
     # let import the notes page by page
     # just the available levels
     # be careful the WK_KANJI_URL contains the type parameter so the levels is added to by &
+    availableVocabIds = getWKAvailableSubjectIds("vocabulary")
     url = WK_VOCAB_URL+"&"+WKH_LEVELS_KEY+"="+",".join(str(x) for x in list(range(1, getWKMaxLevel()+1)))
     while url:
         vocabJson = callWaniKani(url)
@@ -311,6 +330,7 @@ def updateWKVocabDeck():
         wki = WKVocabImporter(mw.col,vocabJson)
         # ignore if first field matches existing note (0 update - default, 2 import)
         wki.importMode = 1
+        wki.availableIds = availableVocabIds;
         wki.initMapping()
         wki.run()
         url = vocabJson[u'pages'][u'next_url']
