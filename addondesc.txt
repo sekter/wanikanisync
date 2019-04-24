@@ -1,4 +1,4 @@
-Up to your WaniKani level the kanjies and words are copied to Anki decks. 
+Up to your WaniKani level where the srs_stage > 0 (learning phase passed) the kanjies and words are copied to Anki decks. 
 You can run this add-on multiple times as your level is increasing in WaniKani, new notes will be added to the existing ones (existing notes won't be touched).
 WaniKani APIv2 key is required!
 
